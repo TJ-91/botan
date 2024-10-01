@@ -1237,7 +1237,7 @@ Test::Result test_valid_constraints(const Botan::Private_Key& key, const std::st
       result.test_eq("crl sign not permitted", crl_sign.compatible_with(key), false);
       result.test_eq("sign", sign_everything.compatible_with(key), false);
    } else if(pk_algo == "DSA" || pk_algo == "ECDSA" || pk_algo == "ECGDSA" || pk_algo == "ECKCDSA" ||
-             pk_algo == "GOST-34.10" || pk_algo == "Dilithium" || pk_algo == "HSS-LMS" || pk_algo == "SLH-DSA") {
+             pk_algo == "GOST-34.10" || pk_algo == "Dilithium" || pk_algo == "ML-DSA" || pk_algo == "HSS-LMS" || pk_algo == "SLH-DSA") {
       // these are signature algorithms only
       result.test_eq("all constraints not permitted", all.compatible_with(key), false);
 
@@ -1583,7 +1583,7 @@ std::vector<std::string> get_sig_paddings(const std::string& sig_algo, const std
       return {hash};
    } else if(sig_algo == "Ed25519" || sig_algo == "Ed448") {
       return {"Pure"};
-   } else if(sig_algo == "Dilithium") {
+   } else if(sig_algo == "Dilithium" || sig_algo == "ML-DSA") {
       return {"Randomized"};
    } else if(sig_algo == "HSS-LMS") {
       return {""};
@@ -1608,6 +1608,7 @@ class X509_Cert_Unit_Tests final : public Test {
                                        "Ed25519",
                                        "Ed448",
                                        "Dilithium",
+                                       "ML-DSA",
                                        "HSS-LMS",
                                        "SLH-DSA"};
 
@@ -1625,7 +1626,7 @@ class X509_Cert_Unit_Tests final : public Test {
             if(algo == "Ed448") {
                hash = "SHAKE-256(912)";
             }
-            if(algo == "Dilithium") {
+            if(algo == "Dilithium" || algo == "ML-DSA") {
                hash = "SHAKE-256(512)";
             }
 
