@@ -1,0 +1,26 @@
+<defines>
+XMSSMT_RFC8391 -> 20260101 # TODO
+</defines>
+
+<module_info>
+name -> "XMSSMT"
+brief -> "Multi-Tree version of XMSS"
+</module_info>
+
+<header:public>
+xmssmt.h
+xmssmt_parameters.h
+</header:public>
+
+<header:internal>
+xmssmt_verification_operation.h
+xmssmt_signature.h
+</header:internal>
+
+<requires>
+xmss
+</requires>
+
+<os_features>
+atomics
+</os_features>

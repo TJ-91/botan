@@ -24,8 +24,8 @@
 #include <botan/internal/buffer_slicer.h>
 #include <botan/internal/concat_util.h>
 #include <botan/internal/loadstor.h>
-#include <botan/internal/xmss_common_ops.h>
 #include <botan/internal/xmss_hash.h>
+#include <botan/internal/xmss_core.h>
 #include <botan/internal/xmss_index_registry.h>
 #include <botan/internal/xmss_signature_operation.h>
 
@@ -294,14 +294,14 @@ secure_vector<uint8_t> XMSS_PrivateKey::tree_hash(size_t start_idx,
          node_addresses[i].set_tree_height(static_cast<uint32_t>(target_node_height - (level + 1)));
          node_addresses[i].set_tree_index((node_addresses[2 * i + 1].get_tree_index() - 1) >> 1);
 
-         work.push_back(thread_pool.run(&XMSS_Common_Ops::randomize_tree_hash,
+         work.push_back(thread_pool.run(&XMSS_Core_Ops::randomize_tree_hash,
                                         std::ref(nodes[i]),
                                         std::cref(ro_nodes[2 * i]),
                                         std::cref(ro_nodes[2 * i + 1]),
                                         std::ref(node_addresses[i]),
                                         std::cref(this->public_seed()),
                                         std::ref(xmss_hash[i]),
-                                        std::cref(m_xmss_params)));
+                                        m_xmss_params.element_size()));
       }
 
       for(auto& w : work) {
@@ -313,8 +313,13 @@ secure_vector<uint8_t> XMSS_PrivateKey::tree_hash(size_t start_idx,
    // Avoid creation an extra thread to calculate root node.
    node_addresses[0].set_tree_height(static_cast<uint32_t>(target_node_height - 1));
    node_addresses[0].set_tree_index((node_addresses[1].get_tree_index() - 1) >> 1);
-   XMSS_Common_Ops::randomize_tree_hash(
-      nodes[0], nodes[0], nodes[1], node_addresses[0], this->public_seed(), hash, m_xmss_params);
+   XMSS_Core_Ops::randomize_tree_hash(nodes[0],
+                                      nodes[0],
+                                      nodes[1],
+                                      node_addresses[0],
+                                      this->public_seed(),
+                                      m_private->hash(),
+                                      m_xmss_params.element_size());
    return nodes[0];
 #else
    secure_vector<uint8_t> result;
@@ -347,7 +352,8 @@ void XMSS_PrivateKey::tree_hash_subtree(
 
       adrs.set_type(XMSS_Address::Type::LTree_Address);
       adrs.set_ltree_address(static_cast<uint32_t>(i));
-      XMSS_Common_Ops::create_l_tree(nodes[level], pk.key_data(), adrs, seed, hash, m_xmss_params);
+      XMSS_Core_Ops::create_l_tree(
+         nodes[level], pk.key_data(), adrs, seed, hash, m_xmss_params.element_size(), m_xmss_params.len());
       node_levels[level] = 0;
 
       adrs.set_type(XMSS_Address::Type::Hash_Tree_Address);
@@ -356,8 +362,8 @@ void XMSS_PrivateKey::tree_hash_subtree(
 
       while(level > 0 && node_levels[level] == node_levels[level - 1]) {
          adrs.set_tree_index(((adrs.get_tree_index() - 1) >> 1));
-         XMSS_Common_Ops::randomize_tree_hash(
-            nodes[level - 1], nodes[level - 1], nodes[level], adrs, seed, hash, m_xmss_params);
+         XMSS_Core_Ops::randomize_tree_hash(
+            nodes[level - 1], nodes[level - 1], nodes[level], adrs, seed, hash, m_xmss_params.element_size());
          node_levels[level - 1]++;
          level--;  //Pop stack top element
          adrs.set_tree_height(adrs.get_tree_height() + 1);

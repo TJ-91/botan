@@ -55,9 +55,9 @@ class XMSS_Signature_Operation final : public virtual PK_Ops::Signature {
        * @param xmss_priv_key A XMSS private key.
        * @param adrs A XMSS Address.
        **/
-      XMSS_Signature::TreeSignature generate_tree_signature(const secure_vector<uint8_t>& msg,
-                                                            XMSS_PrivateKey& xmss_priv_key,
-                                                            XMSS_Address& adrs);
+      XMSS_TreeSignature generate_tree_signature(const secure_vector<uint8_t>& msg,
+                                                 XMSS_PrivateKey& xmss_priv_key,
+                                                 XMSS_Address& adrs);
 
       /**
        * Algorithm 12: "XMSS_sign"

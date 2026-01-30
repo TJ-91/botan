@@ -26,10 +26,10 @@ XMSS_Signature_Operation::XMSS_Signature_Operation(const XMSS_PrivateKey& privat
       m_leaf_idx(0),
       m_is_initialized(false) {}
 
-XMSS_Signature::TreeSignature XMSS_Signature_Operation::generate_tree_signature(const secure_vector<uint8_t>& msg,
-                                                                                XMSS_PrivateKey& xmss_priv_key,
-                                                                                XMSS_Address& adrs) {
-   XMSS_Signature::TreeSignature result;
+XMSS_TreeSignature XMSS_Signature_Operation::generate_tree_signature(const secure_vector<uint8_t>& msg,
+                                                                     XMSS_PrivateKey& xmss_priv_key,
+                                                                     XMSS_Address& adrs) {
+   XMSS_TreeSignature result;
 
    result.authentication_path = build_auth_path(xmss_priv_key, adrs);
    adrs.set_type(XMSS_Address::Type::OTS_Hash_Address);
