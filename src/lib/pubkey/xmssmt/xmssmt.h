@@ -18,6 +18,14 @@
 
 namespace Botan {
 
+class RandomNumberGenerator;
+class XMSS_Address;
+class XMSS_Hash;
+class XMSSMT_PrivateKey_Internal;
+class XMSSMT_Verification_Operation;
+class XMSS_WOTS_PublicKey;
+class XMSS_WOTS_PrivateKey;
+
 class BOTAN_PUBLIC_API(2, 0) XMSSMT_PublicKey : public virtual Public_Key {
    public:
       /**
@@ -109,28 +117,14 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_PublicKey : public virtual Public_Key {
       secure_vector<uint8_t> m_public_seed;  // NOLINT(*non-private-member-variable*)
 };
 
-// template <typename>
-// class Atomic;
+template <typename>
+class Atomic;
 
-// class XMSS_Index_Registry;
+class XMSS_Index_Registry;
 
-// /**
-//  * Determines how WOTS+ private keys are derived from the XMSS private key
-//  */
-
-// enum class WOTS_Derivation_Method : uint8_t {
-//    /// This roughly followed the suggestions in RFC 8391 but is vulnerable
-//    /// to a multi-target attack. For new private keys, we recommend using
-//    /// the derivation as suggested in NIST SP.800-208.
-//    /// Private keys generated with Botan 2.x will need to stay with this mode,
-//    /// otherwise they won't be able to generate valid signatures any longer.
-//    Botan2x = 1,
-
-//    /// Derivation as specified in NIST SP.800-208 to avoid a multi-target attack
-//    /// on the WOTS+ key derivation suggested in RFC 8391. New private keys
-//    /// should use this mode.
-//    NIST_SP800_208 = 2,
-// };
+/**
+ * Determines how WOTS+ private keys are derived from the XMSS private key
+ */
 
 /**
  * An XMSS: Extended Hash-Based Signature private key.
@@ -183,7 +177,6 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_PrivateKey final : public virtual XMSSMT_Pub
        *        of uniformly random data.
        * @param root Root node of the binary hash tree.
        * @param public_seed The public seed.
-       * @param wots_derivation_method The method used to derive WOTS+ private keys
        **/
       XMSSMT_PrivateKey(XMSSMT_Parameters::xmssmt_algorithm_t xmss_algo_id,
                         size_t idx_leaf,
@@ -212,9 +205,9 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_PrivateKey final : public virtual XMSSMT_Pub
 
       std::optional<uint64_t> remaining_operations() const override;
 
-      //   std::unique_ptr<PK_Ops::Signature> create_signature_op(RandomNumberGenerator& rng,
-      //                                                          std::string_view params,
-      //                                                          std::string_view provider) const override;
+      std::unique_ptr<PK_Ops::Signature> create_signature_op(RandomNumberGenerator& rng,
+                                                             std::string_view params,
+                                                             std::string_view provider) const override;
 
       secure_vector<uint8_t> private_key_bits() const override;
 
@@ -229,44 +222,44 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_PrivateKey final : public virtual XMSSMT_Pub
       secure_vector<uint8_t> raw_private_key() const;
 
    private:
-      //   friend class XMSS_Signature_Operation;
+      friend class XMSSMT_Signature_Operation;
 
-      //   size_t reserve_unused_leaf_index();
+      size_t reserve_unused_leaf_index();
 
-      //   const secure_vector<uint8_t>& prf_value() const;
+      const secure_vector<uint8_t>& prf_value() const;
 
-      //   XMSS_WOTS_PublicKey wots_public_key_for(XMSS_Address& adrs, XMSS_Hash& hash) const;
-      //   XMSS_WOTS_PrivateKey wots_private_key_for(XMSS_Address& adrs, XMSS_Hash& hash) const;
+      XMSS_WOTS_PublicKey wots_public_key_for(XMSS_Address& adrs, XMSS_Hash& hash) const;
+      XMSS_WOTS_PrivateKey wots_private_key_for(XMSS_Address& adrs, XMSS_Hash& hash) const;
 
-      //   /**
-      //    * Algorithm 9: "treeHash"
-      //    * Computes the internal n-byte nodes of a Merkle tree.
-      //    *
-      //    * @param start_idx The start index.
-      //    * @param target_node_height Height of the target node.
-      //    * @param adrs Address of the tree containing the target node.
-      //    *
-      //    * @return The root node of a tree of height target_node height with the
-      //    *         leftmost leaf being the hash of the WOTS+ pk with index
-      //    *         start_idx.
-      //    **/
-      //   secure_vector<uint8_t> tree_hash(size_t start_idx, size_t target_node_height, XMSS_Address& adrs);
+      /**
+         * Algorithm 9: "treeHash"
+         * Computes the internal n-byte nodes of a Merkle tree.
+         *
+         * @param start_idx The start index.
+         * @param target_node_height Height of the target node.
+         * @param adrs Address of the tree containing the target node.
+         *
+         * @return The root node of a tree of height target_node height with the
+         *         leftmost leaf being the hash of the WOTS+ pk with index
+         *         start_idx.
+         **/
+      secure_vector<uint8_t> tree_hash(size_t start_idx, size_t target_node_height, const XMSS_Address& adrs);
 
-      //   void tree_hash_subtree(secure_vector<uint8_t>& result,
-      //                          size_t start_idx,
-      //                          size_t target_node_height,
-      //                          XMSS_Address& adrs);
+      void tree_hash_subtree(secure_vector<uint8_t>& result,
+                             size_t start_idx,
+                             size_t target_node_height,
+                             const XMSS_Address& adrs);
 
-      //   /**
-      //    * Helper for multithreaded tree hashing.
-      //    */
-      //   void tree_hash_subtree(secure_vector<uint8_t>& result,
-      //                          size_t start_idx,
-      //                          size_t target_node_height,
-      //                          XMSS_Address& adrs,
-      //                          XMSS_Hash& hash);
+      /**
+         * Helper for multithreaded tree hashing.
+         */
+      XMSS_Address tree_hash_subtree(secure_vector<uint8_t>& result,
+                                     size_t start_idx,
+                                     size_t target_node_height,
+                                     const XMSS_Address& adrs,
+                                     XMSS_Hash& hash);
 
-      //   std::shared_ptr<XMSSMT_PrivateKey_Internal> m_private;
+      std::shared_ptr<XMSSMT_PrivateKey_Internal> m_private;
 };
 
 BOTAN_DIAGNOSTIC_POP

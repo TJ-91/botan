@@ -33,6 +33,23 @@ class XMSSMT_Signature final {
        **/
       XMSSMT_Signature(XMSSMT_Parameters::xmssmt_algorithm_t oid, std::span<const uint8_t> raw_sig);
 
+      /**
+       * Creates an XMSS^MT Signature from XMSS^MT params, a leaf index used for signature
+       * generation, a random value and a vector of reduced XMSS signatures.
+       *
+       * @param leaf_idx Leaf index used to generate the signature.
+       * @param randomness A random value.
+       * @param tree_sig A vector of tree signatures.
+       **/
+      XMSSMT_Signature(XMSSMT_Parameters xmssmt_params,
+                       size_t leaf_idx,
+                       secure_vector<uint8_t> randomness,
+                       std::vector<XMSS_TreeSignature> tree_sigs) :
+            m_xmssmt_params(std::move(xmssmt_params)),
+            m_leaf_idx(leaf_idx),
+            m_randomness(std::move(randomness)),
+            m_tree_sigs(std::move(tree_sigs)) {}
+
       uint64_t unused_leaf_index() const { return m_leaf_idx; }
 
       const secure_vector<uint8_t>& randomness() const { return m_randomness; }

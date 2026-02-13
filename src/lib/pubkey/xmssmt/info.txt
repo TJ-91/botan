@@ -13,8 +13,9 @@ xmssmt_parameters.h
 </header:public>
 
 <header:internal>
-xmssmt_verification_operation.h
 xmssmt_signature.h
+xmssmt_verification_operation.h
+xmssmt_signature_operation.h
 </header:internal>
 
 <requires>

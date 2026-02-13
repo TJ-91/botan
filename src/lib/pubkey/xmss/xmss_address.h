@@ -304,6 +304,8 @@ class XMSS_Address final {
          BOTAN_ASSERT(m_data.size() == m_address_size, "XMSS_Address must be of 256 bits size.");
       }
 
+      XMSS_Address(const XMSS_Address& other) : m_data(other.m_data) {}
+
    protected:
       secure_vector<uint8_t> m_data;  // NOLINT(*non-private-member-variable*)
 

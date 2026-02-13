@@ -14,7 +14,7 @@ namespace Botan {
 
 XMSSMT_Signature::XMSSMT_Signature(XMSSMT_Parameters::xmssmt_algorithm_t oid, std::span<const uint8_t> raw_sig) :
       m_xmssmt_params(XMSSMT_Parameters(oid)), m_leaf_idx(0), m_randomness(0, 0x00) {
-   size_t idx_size = m_xmssmt_params.encoded_sig_idx_size();
+   size_t idx_size = m_xmssmt_params.encoded_idx_size();
 
    // (ceil(h / 8) + n + (h + d * len) * n)
    if(raw_sig.size() !=
@@ -57,8 +57,10 @@ XMSSMT_Signature::XMSSMT_Signature(XMSSMT_Parameters::xmssmt_algorithm_t oid, st
 }
 
 std::vector<uint8_t> XMSSMT_Signature::bytes() const {
-   std::vector<uint8_t> result(m_xmssmt_params.encoded_sig_idx_size());
-   store_be(m_leaf_idx, result);
+   std::vector<uint8_t> result(m_xmssmt_params.encoded_idx_size());
+   for(size_t i = 0; i < result.size(); i++) {
+      result[result.size() - 1 - i] = static_cast<uint8_t>(m_leaf_idx >> (8 * i));
+   }
 
    std::copy(m_randomness.begin(), m_randomness.end(), std::back_inserter(result));
 

@@ -137,9 +137,9 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_Parameters {
       size_t xmss_tree_height() const { return m_tree_height / m_tree_layers; }
 
       /**
-       * @returns The size of the encoded signature index value in an XMSS^MT signature.
+       * @returns The size of the encoded index value in an XMSS^MT signatures and keys (at most 8 bytes).
        **/
-      size_t encoded_sig_idx_size() const { return static_cast<size_t>((m_tree_height + 7) / 8); }  // ceil(h/8)
+      uint64_t encoded_idx_size() const { return static_cast<uint64_t>((m_tree_height + 7) / 8); }  // ceil(h/8)
 
       /**
        * @returns The number of layers in the hypertree
@@ -173,13 +173,7 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_Parameters {
 
       size_t raw_public_key_size() const { return sizeof(uint32_t) + 2 * element_size(); }
 
-      size_t raw_legacy_private_key_size() const {
-         return raw_public_key_size() + sizeof(uint32_t) + 2 * element_size();
-      }
-
-      size_t raw_private_key_size() const {
-         return raw_legacy_private_key_size() + 1 /* identifier for WOTS+ key derivation method */;
-      }
+      size_t raw_private_key_size() const { return raw_public_key_size() + encoded_idx_size() + 2 * element_size(); }
 
       bool operator==(const XMSSMT_Parameters& p) const { return m_oid == p.m_oid; }
 

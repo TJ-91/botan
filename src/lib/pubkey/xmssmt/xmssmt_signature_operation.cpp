@@ -1,0 +1,121 @@
+/*
+ * XMSS^MT Signature Operation
+ * Signature generation operation for Extended Hash-Based Signatures (XMSS^MT) as
+ * defined in:
+ *
+ * [1] XMSS: Extended Hash-Based Signatures,
+ *     Request for Comments: 8391
+ *     Release: May 2018.
+ *     https://datatracker.ietf.org/doc/rfc8391/
+ *
+ * (C) 2026 Johannes Roth
+ *
+ * Botan is released under the Simplified BSD License (see license.txt)
+ **/
+
+#include <botan/internal/xmssmt_signature_operation.h>
+
+#include <botan/internal/xmss_tools.h>
+
+namespace Botan {
+
+XMSSMT_Signature_Operation::XMSSMT_Signature_Operation(const XMSSMT_PrivateKey& private_key) :
+      m_priv_key(private_key),
+      m_hash(private_key.xmssmt_parameters().hash_function_name(), private_key.xmssmt_parameters().hash_id_size()),
+      m_randomness(0),
+      m_leaf_idx(0),
+      m_is_initialized(false) {}
+
+XMSS_TreeSignature XMSSMT_Signature_Operation::generate_tree_signature(const secure_vector<uint8_t>& msg,
+                                                                       XMSS_Address& adrs,
+                                                                       size_t idx_leaf) {
+   XMSS_TreeSignature result;
+
+   result.ots_signature =
+      m_priv_key.wots_private_key_for(adrs, m_hash).sign(msg, m_priv_key.public_seed(), adrs, m_hash);
+
+   result.authentication_path = build_auth_path(idx_leaf, adrs);
+   return result;
+}
+
+XMSSMT_Signature XMSSMT_Signature_Operation::sign(const secure_vector<uint8_t>& msg_hash,
+                                                  XMSSMT_PrivateKey& xmssmt_priv_key) {
+   XMSS_Address adrs;
+   const XMSSMT_Parameters params = xmssmt_priv_key.xmssmt_parameters();
+   std::vector<XMSS_TreeSignature> tree_sigs(params.tree_layers());
+
+   uint64_t idx_tree = m_leaf_idx;
+
+   secure_vector<uint8_t> node = msg_hash;
+   adrs.set_type(XMSS_Address::Type::OTS_Hash_Address);
+   for(size_t i = 0; i < params.tree_layers(); i++) {
+      size_t idx_leaf = (idx_tree & ((1 << params.xmss_tree_height()) - 1));
+      idx_tree = idx_tree >> params.xmss_tree_height();
+
+      adrs.set_layer_addr(i);
+      adrs.set_tree_addr(idx_tree);
+      adrs.set_ots_address(idx_leaf);
+      adrs.set_hash_address(0);
+      tree_sigs.push_back(generate_tree_signature(node, adrs, idx_leaf));
+      node = m_priv_key.tree_hash(
+         idx_leaf, params.xmss_tree_height(), adrs);  // TODO: extremely inefficient to recompute the tree again
+   }
+
+   return XMSSMT_Signature(params, m_leaf_idx, m_randomness, tree_sigs);
+}
+
+size_t XMSSMT_Signature_Operation::signature_length() const {
+   const auto& params = m_priv_key.xmssmt_parameters();
+   return params.encoded_idx_size() + params.element_size() +
+          params.tree_layers() * (params.len() + params.xmss_tree_height()) * params.element_size();
+}
+
+wots_keysig_t XMSSMT_Signature_Operation::build_auth_path(size_t idx_leaf, const XMSS_Address& adrs) {
+   const auto& params = m_priv_key.xmssmt_parameters();
+   wots_keysig_t auth_path(params.xmss_tree_height());
+
+   for(size_t j = 0; j < params.xmss_tree_height(); j++) {
+      const size_t k = (idx_leaf / (static_cast<size_t>(1) << j)) ^ 0x01;
+      auth_path[j] = m_priv_key.tree_hash(k * (static_cast<size_t>(1) << j), j, adrs);
+   }
+
+   return auth_path;
+}
+
+void XMSSMT_Signature_Operation::update(std::span<const uint8_t> input) {
+   initialize();
+   m_hash.h_msg_update(input);
+}
+
+std::vector<uint8_t> XMSSMT_Signature_Operation::sign(RandomNumberGenerator& /*rng*/) {
+   initialize();
+   auto sig = sign(m_hash.h_msg_final(), m_priv_key).bytes();
+   m_is_initialized = false;
+   return sig;
+}
+
+void XMSSMT_Signature_Operation::initialize() {
+   // return if we already initialized and reserved a leaf index for signing.
+   if(m_is_initialized) {
+      return;
+   }
+
+   secure_vector<uint8_t> index_bytes;
+   // reserve leaf index so it can not be reused by another signature
+   // operation using the same private key.
+   m_leaf_idx = static_cast<uint64_t>(m_priv_key.reserve_unused_leaf_index());
+
+   // write prefix for message hashing into buffer.
+   xmss_concat(index_bytes, m_leaf_idx, 32);
+   m_hash.prf(m_randomness, m_priv_key.prf_value(), index_bytes);
+   index_bytes.clear();
+   xmss_concat(index_bytes, m_leaf_idx, m_priv_key.xmssmt_parameters().element_size());
+   m_hash.h_msg_init(m_randomness, m_priv_key.root(), index_bytes);
+   m_is_initialized = true;
+}
+
+AlgorithmIdentifier XMSSMT_Signature_Operation::algorithm_identifier() const {
+   return AlgorithmIdentifier(OID::from_string("XMSSMT"), AlgorithmIdentifier::USE_EMPTY_PARAM);
+}
+
+}  // namespace Botan

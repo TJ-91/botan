@@ -24,34 +24,34 @@ namespace {
 
 #if defined(BOTAN_HAS_XMSSMT_RFC8391)
 
-// class XMSS_Signature_Tests final : public PK_Signature_Generation_Test {
-//    public:
-//       XMSS_Signature_Tests() :
-//             PK_Signature_Generation_Test("XMSS", "pubkey/xmss_sig.vec", "Params,Msg,PrivateKey,Signature") {}
+class XMSSMT_Signature_Tests final : public PK_Signature_Generation_Test {
+   public:
+      XMSSMT_Signature_Tests() :
+            PK_Signature_Generation_Test("XMSSMT", "pubkey/xmssmt_sig.vec", "Params,Msg,PrivateKey,Signature") {}
 
-//       bool skip_this_test(const std::string& /*header*/, const VarMap& vars) override {
-//          if(Test::run_long_tests() == false) {
-//             const std::string params = vars.get_req_str("Params");
+      bool skip_this_test(const std::string& /*header*/, const VarMap& vars) override {
+         if(Test::run_long_tests() == false) {
+            const std::string params = vars.get_req_str("Params");
 
-//             if(params == "SHAKE_10_256" || params == "SHA2_10_192") {
-//                return false;
-//             }
+            if(params.find("60/3") != std::string::npos || params.find("40/2") != std::string::npos) {
+               return true;
+            }
 
-//             return true;
-//          }
+            return false;
+         }
 
-//          return false;
-//       }
+         return false;
+      }
 
-//       std::string default_padding(const VarMap& vars) const override { return vars.get_req_str("Params"); }
+      std::string default_padding(const VarMap& vars) const override { return vars.get_req_str("Params"); }
 
-//       std::unique_ptr<Botan::Private_Key> load_private_key(const VarMap& vars) override {
-//          const std::vector<uint8_t> raw_key = vars.get_req_bin("PrivateKey");
-//          const Botan::secure_vector<uint8_t> sec_key(raw_key.begin(), raw_key.end());
+      std::unique_ptr<Botan::Private_Key> load_private_key(const VarMap& vars) override {
+         const std::vector<uint8_t> raw_key = vars.get_req_bin("PrivateKey");
+         const Botan::secure_vector<uint8_t> sec_key(raw_key.begin(), raw_key.end());
 
-//          return std::make_unique<Botan::XMSS_PrivateKey>(sec_key);
-//       }
-// };
+         return std::make_unique<Botan::XMSSMT_PrivateKey>(sec_key);
+      }
+};
 
 class XMSSMT_Signature_Verify_Tests final : public PK_Signature_Verification_Test {
    public:
@@ -68,23 +68,39 @@ class XMSSMT_Signature_Verify_Tests final : public PK_Signature_Verification_Tes
       // bool test_random_invalid_sigs() const override { return false; }
 };
 
-// class XMSS_Signature_Verify_Invalid_Tests final : public PK_Signature_NonVerification_Test {
-//    public:
-//       XMSS_Signature_Verify_Invalid_Tests() :
-//             PK_Signature_NonVerification_Test(
-//                "XMSS", "pubkey/xmss_invalid.vec", "Params,Msg,PublicKey,InvalidSignature") {}
+class XMSSMT_Signature_Verify_Invalid_Tests final : public PK_Signature_NonVerification_Test {
+   public:
+      XMSSMT_Signature_Verify_Invalid_Tests() :
+            PK_Signature_NonVerification_Test(
+               "XMSSMT", "pubkey/xmssmt_invalid.vec", "Params,Msg,PublicKey,InvalidSignature") {}
 
-//       std::string default_padding(const VarMap& vars) const override { return vars.get_req_str("Params"); }
+      std::string default_padding(const VarMap& vars) const override { return vars.get_req_str("Params"); }
 
-//       std::unique_ptr<Botan::Public_Key> load_public_key(const VarMap& vars) override {
-//          const std::vector<uint8_t> raw_key = vars.get_req_bin("PublicKey");
-//          return std::make_unique<Botan::XMSS_PublicKey>(raw_key);
-//       }
-// };
+      std::unique_ptr<Botan::Public_Key> load_public_key(const VarMap& vars) override {
+         const std::vector<uint8_t> raw_key = vars.get_req_bin("PublicKey");
+         return std::make_unique<Botan::XMSSMT_PublicKey>(raw_key);
+      }
+};
 
 class XMSSMT_Keygen_Tests final : public PK_Key_Generation_Test {
    public:
-      std::vector<std::string> keygen_params() const override { return {"XMSSMT-SHA2_20/2_256"}; }
+      /* all 20/4 parameter sets (fast) so we test all hash variations,
+         to test different heights the remaining SHA2_*_256 parameter sets excluding 60/3 and 40/2 are included
+         60/3 and 40/2 is too slow  */
+      std::vector<std::string> keygen_params() const override {
+         return {"XMSSMT-SHA2_20/4_192",
+                 "XMSSMT-SHAKE256_20/4_192",
+                 "XMSSMT-SHA2_20/4_256",
+                 "XMSSMT-SHAKE_20/4_256",
+                 "XMSSMT-SHAKE256_20/4_256",
+                 "XMSSMT-SHA2_20/4_512",
+                 "XMSSMT-SHAKE_20/4_512",
+                 "XMSSMT-SHA2_20/2_256",
+                 "XMSSMT-SHA2_40/4_256",
+                 "XMSSMT-SHA2_40/8_256",
+                 "XMSSMT-SHA2_60/6_256",
+                 "XMSSMT-SHA2_60/12_256"};
+      }
 
       std::string algo_name() const override { return "XMSSMT"; }
 
@@ -101,45 +117,51 @@ class XMSSMT_Keygen_Tests final : public PK_Key_Generation_Test {
       }
 };
 
-// /**
-//  * Tests that the key generation is compatible with the reference implementation
-//  *   based on: https://github.com/XMSS/xmss-reference/tree/171ccbd
-//  */
-// class XMSS_Keygen_Reference_Test final : public Text_Based_Test {
-//    public:
-//       XMSS_Keygen_Reference_Test() :
-//             Text_Based_Test("pubkey/xmss_keygen_reference.vec",
-//                             "Params,SecretSeed,PublicSeed,SecretPrf,PublicKey,PrivateKey") {}
+/**
+ * Tests that the key generation is compatible with the reference implementation
+ *   based on: https://github.com/XMSS/xmss-reference/tree/171ccbd
+ */
+class XMSSMT_Keygen_Reference_Test final : public Text_Based_Test {
+   public:
+      XMSSMT_Keygen_Reference_Test() :
+            Text_Based_Test("pubkey/xmssmt_keygen.vec", "Params,SecretSeed,PublicSeed,SecretPrf,PublicKey,PrivateKey") {
+      }
 
-//       Test::Result run_one_test(const std::string& /*header*/, const VarMap& vars) final {
-//          Test::Result result(vars.get_req_str("Params"));
+      Test::Result run_one_test(const std::string& /*header*/, const VarMap& vars) final {
+         Test::Result result(vars.get_req_str("Params"));
 
-//          Fixed_Output_RNG fixed_rng;
-//          auto add_entropy = [&](auto v) { fixed_rng.add_entropy(v.data(), v.size()); };
+         Fixed_Output_RNG fixed_rng;
+         auto add_entropy = [&](auto v) { fixed_rng.add_entropy(v.data(), v.size()); };
 
-//          // The order of the RNG values is dependent on the order they are pulled
-//          // from the RNG in the production implementation.
-//          add_entropy(vars.get_req_bin("PublicSeed"));  // XMSS_PublicKey constructor's initializer list
-//          add_entropy(vars.get_req_bin("SecretPrf"));   // XMSS_PrivateKey constructor's call to ..._Internal constructor
-//          add_entropy(vars.get_req_bin("SecretSeed"));  // XMSS_PrivateKey constructor's call to ..._Internal constructor
+         // The order of the RNG values is dependent on the order they are pulled
+         // from the RNG in the production implementation.
+         add_entropy(vars.get_req_bin("PublicSeed"));  // XMSSMT_PublicKey constructor's initializer list
+         add_entropy(
+            vars.get_req_bin("SecretPrf"));  // XMSSMT_PrivateKey constructor's call to ..._Internal constructor
+         add_entropy(
+            vars.get_req_bin("SecretSeed"));  // XMSSMT_PrivateKey constructor's call to ..._Internal constructor
 
-//          const auto xmss_algo = Botan::XMSS_Parameters::xmss_id_from_string(vars.get_req_str("Params"));
-//          const Botan::XMSS_PrivateKey keypair(xmss_algo, fixed_rng);
+         const auto xmssmt_algo = Botan::XMSSMT_Parameters::xmssmt_id_from_string(vars.get_req_str("Params"));
+         const Botan::XMSSMT_PrivateKey keypair(xmssmt_algo, fixed_rng);
 
-//          result.test_eq("Generated private key matches", keypair.raw_private_key(), vars.get_req_bin("PrivateKey"));
-//          result.test_eq("Generated public key matches", keypair.raw_public_key(), vars.get_req_bin("PublicKey"));
+         result.test_eq("Generated private key matches", keypair.raw_private_key(), vars.get_req_bin("PrivateKey"));
+         result.test_eq("Generated public key matches", keypair.raw_public_key_bits(), vars.get_req_bin("PublicKey"));
 
-//          return result;
-//       }
+         return result;
+      }
 
-//       bool skip_this_test(const std::string& /*header*/, const VarMap& vars) override {
-//          const std::string param_str = vars.get_req_str("Params");
-//          const auto params = Botan::XMSS_Parameters(param_str);
-//          const bool hash_available = Botan::HashFunction::create(params.hash_function_name()) != nullptr;
-//          const bool fast_params = param_str == "XMSS-SHA2_10_256";
-//          return !(hash_available && (fast_params || Test::run_long_tests()));
-//       }
-// };
+      bool skip_this_test(const std::string& /*header*/, const VarMap& vars) override {
+         const std::string param_str = vars.get_req_str("Params");
+         const auto params = Botan::XMSSMT_Parameters(param_str);
+         const bool hash_available = Botan::HashFunction::create(params.hash_function_name()) != nullptr;
+
+         /* generating keys with layer height of 5 is very fast */
+         const bool fast_params = param_str.find("20/4") != std::string::npos ||
+                                  param_str.find("40/8") != std::string::npos ||
+                                  param_str.find("60/12") != std::string::npos;
+         return !(hash_available && (fast_params || Test::run_long_tests()));
+      }
+};
 
 // std::vector<Test::Result> xmss_statefulness() {
 //    auto rng = Test::new_rng(__func__);
@@ -303,11 +325,11 @@ class XMSSMT_Keygen_Tests final : public PK_Key_Generation_Test {
 //    };
 // }
 
-// BOTAN_REGISTER_TEST("pubkey", "xmss_sign", XMSS_Signature_Tests);
+BOTAN_REGISTER_TEST("pubkey", "xmssmt_sign", XMSSMT_Signature_Tests);
 BOTAN_REGISTER_TEST("pubkey", "xmssmt_verify", XMSSMT_Signature_Verify_Tests);
-// BOTAN_REGISTER_TEST("pubkey", "xmss_verify_invalid", XMSS_Signature_Verify_Invalid_Tests);
+BOTAN_REGISTER_TEST("pubkey", "xmssmt_verify_invalid", XMSSMT_Signature_Verify_Invalid_Tests);
 BOTAN_REGISTER_TEST("pubkey", "xmssmt_keygen", XMSSMT_Keygen_Tests);
-// BOTAN_REGISTER_TEST("pubkey", "xmss_keygen_reference", XMSS_Keygen_Reference_Test);
+BOTAN_REGISTER_TEST("pubkey", "xmssmt_keygen_reference", XMSSMT_Keygen_Reference_Test);
 // BOTAN_REGISTER_TEST_FN("pubkey", "xmss_unit_tests", xmss_statefulness, xmss_legacy_private_key);
 
 #endif
