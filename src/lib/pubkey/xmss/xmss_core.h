@@ -51,7 +51,6 @@ class XMSS_Core_Ops {
         * @param[in] seed The seed for G.
         * @param[in] hash Instance of XMSS_Hash, that may only by the thread
         *            executing generate_public_key.
-        * @param[in] params parameters
         **/
       static void randomize_tree_hash(secure_vector<uint8_t>& result,
                                       const secure_vector<uint8_t>& left,
@@ -93,7 +92,7 @@ class XMSS_Core_Ops {
        *
        * @param[in] tree_sig A reduced XMSS signature.
        * @param[in] msg A message (or intermediate root node for XMSS^MT).
-       * @param[in] ards A XMSS tree address.
+       * @param[in] adrs A XMSS tree address.
        * @param[in] seed The public seed.
        * @param[in] hash a XMSS_Hash instance.
        * @param[in] xmss_element_size size of a node in XMSS.

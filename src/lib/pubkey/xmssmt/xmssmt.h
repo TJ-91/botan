@@ -1,7 +1,5 @@
 /*
  * XMSS^MT Keys
- * (C) 2016,2017 Matthias Gierlings
- * (C) 2019 René Korthaus, Rohde & Schwarz Cybersecurity
  * (C) 2026 Johannes Roth
  *
  * Botan is released under the Simplified BSD License (see license.txt)
@@ -31,15 +29,15 @@ class XMSS_WOTS_PrivateKey;
 class BOTAN_PUBLIC_API(2, 0) XMSSMT_PublicKey : public virtual Public_Key {
    public:
       /**
-       * Creates a new XMSS public key for the chosen XMSS signature method.
+       * Creates a new XMSS^MT public key for the chosen XMSS^MT signature method.
        * New public and prf seeds are generated using rng. The appropriate WOTS
        * signature method will be automatically set based on the chosen XMSS
        * signature method.
        *
-       * @param xmss_oid Identifier for the selected XMSS signature method.
+       * @param xmssmt_oid Identifier for the selected XMSS^MT signature method.
        * @param rng A random number generator to use for key generation.
        **/
-      XMSSMT_PublicKey(XMSSMT_Parameters::xmssmt_algorithm_t xmss_oid, RandomNumberGenerator& rng);
+      XMSSMT_PublicKey(XMSSMT_Parameters::xmssmt_algorithm_t xmssmt_oid, RandomNumberGenerator& rng);
 
       /**
        * Loads a public key.
@@ -55,11 +53,11 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_PublicKey : public virtual Public_Key {
        * Creates a new XMSS public key for a chosen XMSS signature method as
        * well as pre-computed root node and public_seed values.
        *
-       * @param xmss_oid Identifier for the selected XMSS signature method.
+       * @param xmssmt_oid Identifier for the selected XMSS signature method.
        * @param root Root node value.
        * @param public_seed Public seed value.
        **/
-      XMSSMT_PublicKey(XMSSMT_Parameters::xmssmt_algorithm_t xmss_oid,
+      XMSSMT_PublicKey(XMSSMT_Parameters::xmssmt_algorithm_t xmssmt_oid,
                        secure_vector<uint8_t> root,
                        secure_vector<uint8_t> public_seed);
 
@@ -146,14 +144,13 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_PrivateKey final : public virtual XMSSMT_Pub
                                                        public virtual Private_Key {
    public:
       /**
-      * Creates a new XMSS private key for the chosen XMSS signature method.
+      * Creates a new XMSS^MT private key for the chosen XMSS signature method.
       * New seeds for public/private key and pseudo random function input are
       * generated using the provided RNG. The appropriate WOTS signature method
       * will be automatically set based on the chosen XMSS signature method.
       *
-      * @param xmss_algo_id Identifier for the selected XMSS signature method.
+      * @param xmssmt_algo_id Identifier for the selected XMSS^MT signature method.
       * @param rng A random number generator to use for key generation.
-      * @param wots_derivation_method The method used to derive WOTS+ private keys
       **/
       XMSSMT_PrivateKey(XMSSMT_Parameters::xmssmt_algorithm_t xmssmt_algo_id, RandomNumberGenerator& rng);
 
@@ -166,12 +163,12 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_PrivateKey final : public virtual XMSSMT_Pub
       BOTAN_FUTURE_EXPLICIT XMSSMT_PrivateKey(std::span<const uint8_t> raw_key);
 
       /**
-       * Creates a new XMSS private key for the chosen XMSS signature method
+       * Creates a new XMSS^MT private key for the chosen XMSS^MT signature method
        * using precomputed seeds for public/private keys and pseudo random
        * function input. The appropriate WOTS signature method will be
-       * automatically set, based on the chosen XMSS signature method.
+       * automatically set, based on the chosen XMSS^MT signature method.
        *
-       * @param xmss_algo_id Identifier for the selected XMSS signature method.
+       * @param xmssmt_algo_id Identifier for the selected XMSS^MT signature method.
        * @param idx_leaf Index of the next unused leaf.
        * @param wots_priv_seed A seed to generate a Winternitz-One-Time-
        *                      Signature private key from.
@@ -180,7 +177,7 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_PrivateKey final : public virtual XMSSMT_Pub
        * @param root Root node of the binary hash tree.
        * @param public_seed The public seed.
        **/
-      XMSSMT_PrivateKey(XMSSMT_Parameters::xmssmt_algorithm_t xmss_algo_id,
+      XMSSMT_PrivateKey(XMSSMT_Parameters::xmssmt_algorithm_t xmssmt_algo_id,
                         uint64_t idx_leaf,
                         secure_vector<uint8_t> wots_priv_seed,
                         secure_vector<uint8_t> prf,

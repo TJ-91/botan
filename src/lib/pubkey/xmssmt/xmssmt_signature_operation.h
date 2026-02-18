@@ -49,7 +49,7 @@ class XMSSMT_Signature_Operation final : public virtual PK_Ops::Signature {
    private:
       XMSS_TreeSignature generate_tree_signature(const secure_vector<uint8_t>& msg,
                                                  XMSS_Address& adrs,
-                                                 size_t idx_leaf);
+                                                 uint32_t idx_leaf);
 
       secure_vector<uint8_t> root_from_signature(const XMSS_TreeSignature& tree_sig,
                                                  const secure_vector<uint8_t>& msg,
@@ -68,7 +68,7 @@ class XMSSMT_Signature_Operation final : public virtual PK_Ops::Signature {
        **/
       XMSSMT_Signature sign(const secure_vector<uint8_t>& msg, XMSSMT_PrivateKey& xmssmt_priv_key);
 
-      wots_keysig_t build_auth_path(size_t idx_leaf, const XMSS_Address& adrs);
+      wots_keysig_t build_auth_path(uint32_t idx_leaf, const XMSS_Address& adrs);
 
       void initialize();
 

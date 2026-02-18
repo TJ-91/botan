@@ -14,7 +14,7 @@ namespace Botan {
 
 XMSSMT_Signature::XMSSMT_Signature(XMSSMT_Parameters::xmssmt_algorithm_t oid, std::span<const uint8_t> raw_sig) :
       m_xmssmt_params(XMSSMT_Parameters(oid)), m_leaf_idx(0), m_randomness(0, 0x00) {
-   size_t idx_size = m_xmssmt_params.encoded_idx_size();
+   const size_t idx_size = m_xmssmt_params.encoded_idx_size();
 
    // (ceil(h / 8) + n + (h + d * len) * n)
    if(raw_sig.size() !=

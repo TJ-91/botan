@@ -142,7 +142,7 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_Parameters {
       /**
        * @returns The size of the encoded index value in an XMSS^MT signatures and keys (at most 8 bytes).
        **/
-      uint64_t encoded_idx_size() const { return static_cast<uint64_t>((m_tree_height + 7) / 8); }  // ceil(h/8)
+      size_t encoded_idx_size() const { return (m_tree_height + 7) / 8; }  // ceil(h/8)
 
       /**
        * @returns The number of layers in the hypertree

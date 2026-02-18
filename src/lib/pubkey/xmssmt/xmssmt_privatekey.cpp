@@ -85,8 +85,8 @@ class XMSSMT_PrivateKey_Internal {
 
          auto unused_leaf_bytes = s.take(xmssmt_params.encoded_idx_size());
          uint64_t unused_leaf = 0;
-         for(size_t i = 0; i < unused_leaf_bytes.size(); i++) {
-            unused_leaf = (unused_leaf << 8) | static_cast<uint64_t>(unused_leaf_bytes[i]);
+         for(const uint8_t unused_leaf_byte : unused_leaf_bytes) {
+            unused_leaf = (unused_leaf << 8) | static_cast<uint64_t>(unused_leaf_byte);
          }
          if(unused_leaf >= (1ULL << m_xmssmt_params.tree_height())) {
             throw Decoding_Error("XMSS^MT private key leaf index out of bounds");
@@ -176,7 +176,7 @@ XMSSMT_PrivateKey::XMSSMT_PrivateKey(XMSSMT_Parameters::xmssmt_algorithm_t xmssm
       XMSSMT_PublicKey(xmssmt_algo_id, rng),
       m_private(std::make_shared<XMSSMT_PrivateKey_Internal>(m_xmssmt_params, m_wots_params, rng)) {
    XMSS_Address adrs;
-   adrs.set_layer_addr(m_xmssmt_params.tree_layers() - 1);
+   adrs.set_layer_addr(static_cast<uint32_t>(m_xmssmt_params.tree_layers() - 1));
    m_root = tree_hash(0, XMSSMT_PublicKey::m_xmssmt_params.xmss_tree_height(), adrs);
 }
 

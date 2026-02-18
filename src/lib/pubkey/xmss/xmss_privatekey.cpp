@@ -202,7 +202,7 @@ XMSS_PrivateKey::XMSS_PrivateKey(XMSS_Parameters::xmss_algorithm_t xmss_algo_id,
                                  WOTS_Derivation_Method wots_derivation_method) :
       XMSS_PublicKey(xmss_algo_id, rng),
       m_private(std::make_shared<XMSS_PrivateKey_Internal>(m_xmss_params, m_wots_params, wots_derivation_method, rng)) {
-   XMSS_Address adrs;
+   const XMSS_Address adrs;
    XMSS_Hash hash(m_xmss_params);
    m_root = tree_hash(0, XMSS_PublicKey::m_xmss_params.tree_height(), adrs, hash);
 }

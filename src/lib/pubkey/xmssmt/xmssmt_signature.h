@@ -39,7 +39,7 @@ class XMSSMT_Signature final {
        *
        * @param leaf_idx Leaf index used to generate the signature.
        * @param randomness A random value.
-       * @param tree_sig A vector of tree signatures.
+       * @param tree_sigs A vector of tree signatures.
        **/
       XMSSMT_Signature(XMSSMT_Parameters xmssmt_params,
                        size_t leaf_idx,

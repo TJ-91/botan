@@ -147,7 +147,7 @@ secure_vector<uint8_t> XMSS_Core_Ops::tree_hash(
    }
 
    const size_t subtrees = static_cast<size_t>(1) << split_level;
-   const uint32_t last_idx = (static_cast<size_t>(1) << (target_node_height)) + start_idx;
+   const uint32_t last_idx = (static_cast<uint32_t>(1) << (target_node_height)) + start_idx;
    const uint32_t offs = (last_idx - start_idx) / subtrees;
    // this cast cannot overflow because target_node_height is limited
    uint8_t level = static_cast<uint8_t>(split_level);  // current level in the tree
@@ -191,7 +191,7 @@ secure_vector<uint8_t> XMSS_Core_Ops::tree_hash(
 
    for(size_t i = 0; i < work_treehash.size(); i++) {
       // retrieve the addresses for the computed nodes
-      XMSS_Address node_adrs = work_treehash[i].get();
+      const XMSS_Address node_adrs = work_treehash[i].get();
       node_addresses[i].set_tree_height(node_adrs.get_tree_height());
       node_addresses[i].set_tree_index(node_adrs.get_tree_index());
    }

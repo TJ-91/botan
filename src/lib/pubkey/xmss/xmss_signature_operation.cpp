@@ -59,8 +59,8 @@ wots_keysig_t XMSS_Signature_Operation::build_auth_path(XMSS_PrivateKey& priv_ke
    adrs.set_type(XMSS_Address::Type::Hash_Tree_Address);
 
    for(size_t j = 0; j < params.tree_height(); j++) {
-      const uint32_t k = (m_leaf_idx / (static_cast<size_t>(1) << j)) ^ 0x01;
-      auth_path[j] = priv_key.tree_hash(k * (static_cast<size_t>(1) << j), j, adrs, m_hash);
+      const uint32_t k = (m_leaf_idx / (static_cast<uint32_t>(1) << j)) ^ 0x01;
+      auth_path[j] = priv_key.tree_hash(k * (static_cast<uint32_t>(1) << j), j, adrs, m_hash);
    }
 
    return auth_path;

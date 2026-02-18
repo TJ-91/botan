@@ -22,22 +22,23 @@ XMSS_Verification_Operation::XMSS_Verification_Operation(const XMSS_PublicKey& p
 bool XMSS_Verification_Operation::verify(const XMSS_Signature& sig,
                                          const secure_vector<uint8_t>& msg,
                                          const XMSS_PublicKey& public_key) {
-   XMSS_Parameters params = public_key.xmss_parameters();
+   const XMSS_Parameters& params = public_key.xmss_parameters();
    XMSS_Address adrs;
    secure_vector<uint8_t> index_bytes;
    xmss_concat(index_bytes, sig.unused_leaf_index(), m_pub_key.xmss_parameters().element_size());
    const secure_vector<uint8_t> msg_digest = m_hash.h_msg(sig.randomness(), public_key.root(), index_bytes, msg);
 
-   const secure_vector<uint8_t> node = XMSS_Core_Ops::root_from_signature(sig.unused_leaf_index(),
-                                                                          sig.tree(),
-                                                                          msg_digest,
-                                                                          adrs,
-                                                                          public_key.public_seed(),
-                                                                          m_hash,
-                                                                          params.element_size(),
-                                                                          params.tree_height(),
-                                                                          params.len(),
-                                                                          params.ots_oid());
+   const secure_vector<uint8_t> node =
+      XMSS_Core_Ops::root_from_signature(static_cast<uint32_t>(sig.unused_leaf_index()),
+                                         sig.tree(),
+                                         msg_digest,
+                                         adrs,
+                                         public_key.public_seed(),
+                                         m_hash,
+                                         params.element_size(),
+                                         params.tree_height(),
+                                         params.len(),
+                                         params.ots_oid());
 
    return (node == public_key.root());
 }

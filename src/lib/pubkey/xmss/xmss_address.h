@@ -63,8 +63,8 @@ class XMSS_Address final {
        * @return Tree address.
        **/
       uint64_t get_tree_addr() const {
-         uint64_t high = static_cast<uint64_t>(get_lo32(0));
-         uint64_t low = static_cast<uint64_t>(get_hi32(1));
+         const uint64_t high = static_cast<uint64_t>(get_lo32(0));
+         const uint64_t low = static_cast<uint64_t>(get_hi32(1));
          return (high << 32) | low;
       }
 
@@ -310,7 +310,11 @@ class XMSS_Address final {
          BOTAN_ASSERT(m_data.size() == m_address_size, "XMSS_Address must be of 256 bits size.");
       }
 
-      XMSS_Address(const XMSS_Address& other) : m_data(other.m_data) {}
+      ~XMSS_Address() = default;
+      XMSS_Address(const XMSS_Address&) = default;
+      XMSS_Address& operator=(const XMSS_Address&) = default;
+      XMSS_Address(XMSS_Address&&) noexcept = default;
+      XMSS_Address& operator=(XMSS_Address&&) noexcept = default;
 
    protected:
       secure_vector<uint8_t> m_data;  // NOLINT(*non-private-member-variable*)
