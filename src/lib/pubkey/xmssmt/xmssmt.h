@@ -1,5 +1,7 @@
 /*
  * XMSS^MT Keys
+ * (C) 2016,2017 Matthias Gierlings
+ * (C) 2019 René Korthaus, Rohde & Schwarz Cybersecurity
  * (C) 2026 Johannes Roth
  *
  * Botan is released under the Simplified BSD License (see license.txt)
@@ -179,7 +181,7 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_PrivateKey final : public virtual XMSSMT_Pub
        * @param public_seed The public seed.
        **/
       XMSSMT_PrivateKey(XMSSMT_Parameters::xmssmt_algorithm_t xmss_algo_id,
-                        size_t idx_leaf,
+                        uint64_t idx_leaf,
                         secure_vector<uint8_t> wots_priv_seed,
                         secure_vector<uint8_t> prf,
                         secure_vector<uint8_t> root,
@@ -188,20 +190,6 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_PrivateKey final : public virtual XMSSMT_Pub
       bool stateful_operation() const override { return true; }
 
       std::unique_ptr<Public_Key> public_key() const override;
-
-      /**
-       * Retrieves the last unused leaf index of the private key. Reusing a leaf
-       * by utilizing leaf indices lower than the last unused leaf index will
-       * compromise security.
-       *
-       * @return Index of the last unused leaf.
-       **/
-      BOTAN_DEPRECATED("Use remaining_operations()") size_t unused_leaf_index() const;
-
-      /**
-       * Retrieves the number of remaining signatures for this private key.
-       */
-      BOTAN_DEPRECATED("Use remaining_operations()") size_t remaining_signatures() const;
 
       std::optional<uint64_t> remaining_operations() const override;
 
@@ -224,40 +212,14 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_PrivateKey final : public virtual XMSSMT_Pub
    private:
       friend class XMSSMT_Signature_Operation;
 
-      size_t reserve_unused_leaf_index();
+      uint64_t reserve_unused_leaf_index();
 
       const secure_vector<uint8_t>& prf_value() const;
 
       XMSS_WOTS_PublicKey wots_public_key_for(XMSS_Address& adrs, XMSS_Hash& hash) const;
       XMSS_WOTS_PrivateKey wots_private_key_for(XMSS_Address& adrs, XMSS_Hash& hash) const;
 
-      /**
-         * Algorithm 9: "treeHash"
-         * Computes the internal n-byte nodes of a Merkle tree.
-         *
-         * @param start_idx The start index.
-         * @param target_node_height Height of the target node.
-         * @param adrs Address of the tree containing the target node.
-         *
-         * @return The root node of a tree of height target_node height with the
-         *         leftmost leaf being the hash of the WOTS+ pk with index
-         *         start_idx.
-         **/
-      secure_vector<uint8_t> tree_hash(size_t start_idx, size_t target_node_height, const XMSS_Address& adrs);
-
-      void tree_hash_subtree(secure_vector<uint8_t>& result,
-                             size_t start_idx,
-                             size_t target_node_height,
-                             const XMSS_Address& adrs);
-
-      /**
-         * Helper for multithreaded tree hashing.
-         */
-      XMSS_Address tree_hash_subtree(secure_vector<uint8_t>& result,
-                                     size_t start_idx,
-                                     size_t target_node_height,
-                                     const XMSS_Address& adrs,
-                                     XMSS_Hash& hash);
+      secure_vector<uint8_t> tree_hash(uint32_t start_idx, size_t target_node_height, const XMSS_Address& adrs);
 
       std::shared_ptr<XMSSMT_PrivateKey_Internal> m_private;
 };

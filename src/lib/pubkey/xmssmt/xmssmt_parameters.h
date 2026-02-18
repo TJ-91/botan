@@ -134,7 +134,10 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_Parameters {
       /**
        * @returns The height of one XMSS tree in the XMSS^MT hyper tree.
        **/
-      size_t xmss_tree_height() const { return m_tree_height / m_tree_layers; }
+      size_t xmss_tree_height() const {
+         // Note: All layers are of equal height, i.e., the total height is guaranteed to be divisible by the number of layers.
+         return m_tree_height / m_tree_layers;
+      }
 
       /**
        * @returns The size of the encoded index value in an XMSS^MT signatures and keys (at most 8 bytes).

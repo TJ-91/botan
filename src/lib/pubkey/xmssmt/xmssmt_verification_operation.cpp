@@ -30,7 +30,7 @@ bool XMSSMT_Verification_Operation::verify(const XMSSMT_Signature& sig,
    xmss_concat(index_bytes, sig.unused_leaf_index(), params.element_size());
    const secure_vector<uint8_t> msg_digest = m_hash.h_msg(sig.randomness(), public_key.root(), index_bytes, msg);
 
-   size_t idx_tree = sig.unused_leaf_index();
+   uint64_t idx_tree = sig.unused_leaf_index();
 
    adrs.set_layer_addr(0);
    adrs.set_tree_addr(idx_tree);
@@ -38,7 +38,7 @@ bool XMSSMT_Verification_Operation::verify(const XMSSMT_Signature& sig,
    secure_vector<uint8_t> node = msg_digest;
 
    for(size_t i = 0; i < params.tree_layers(); i++) {
-      size_t idx_leaf = (idx_tree & ((1 << params.xmss_tree_height()) - 1));
+      uint32_t idx_leaf = (idx_tree & ((1 << params.xmss_tree_height()) - 1));
       idx_tree = idx_tree >> params.xmss_tree_height();
 
       adrs.set_layer_addr(i);

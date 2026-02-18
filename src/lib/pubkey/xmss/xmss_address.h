@@ -100,7 +100,7 @@ class XMSS_Address final {
        **/
       void set_type(Type type) {
          m_data[15] = static_cast<uint8_t>(type);
-         std::fill(m_data.begin() + 16, m_data.end(), static_cast<uint8_t>(0));
+         clear_lower();
       }
 
       /**
@@ -286,6 +286,12 @@ class XMSS_Address final {
                       "LTree_Address or XMSS_Address::Type::Hash_Tree_Address.");
          set_hi32(3, value);
       }
+
+      /**
+       * Reset the 128 LSBs of the Address to zero.
+       * This resets the fields after the type and also keeps the layer and tree address.
+       **/
+      void clear_lower() { std::fill(m_data.begin() + 16, m_data.end(), static_cast<uint8_t>(0)); }
 
       const secure_vector<uint8_t>& bytes() const { return m_data; }
 

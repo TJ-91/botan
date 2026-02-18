@@ -37,10 +37,10 @@ def fromhex(s):
     return binascii.unhexlify(s)
 
 
-# use the fast variant to vastly speed up signature generation
-KEYGEN_UTIL = "ui/xmss_keypair_fast"
-SIGN_UTIL = "ui/xmss_sign_fast"
+KEYGEN_UTIL = "ui/xmss_keypair"
+SIGN_UTIL = "ui/xmss_sign"
 
+# use the fast variant to vastly speed up signature generation
 KEYGEN_UTIL_XMSSMT = "ui/xmssmt_keypair_fast"
 SIGN_UTIL_XMSSMT = "ui/xmssmt_sign_fast"
 
@@ -69,8 +69,6 @@ def is_xmss(param):
     return not param.startswith("XMSSMT")
 
 
-# Reference implementation keypair output format
-#
 # XMSS:
 # * Format sk: [(32bit) index || SK_SEED || SK_PRF || root || PUB_SEED]
 # * Format pk: [root || PUB_SEED], omitting algorithm OID.
@@ -78,7 +76,7 @@ def is_xmss(param):
 # * Format sk: [(ceil(h/8) bit) idx || SK_SEED || SK_PRF || root || PUB_SEED]
 # * Format pk: [root || PUB_SEED] omitting algo oid.
 #
-# output: [oid || pk || oid || sk]
+# Keypair output format (both): [oid || pk || oid || sk]
 class Keypair:
     @staticmethod
     async def generate(xmss_param):

@@ -32,8 +32,8 @@ uint64_t XMSS_Index_Registry::make_key_id(const secure_vector<uint8_t>& private_
    return key_id;
 }
 
-std::shared_ptr<Atomic<size_t>> XMSS_Index_Registry::get(const secure_vector<uint8_t>& private_seed,
-                                                         const secure_vector<uint8_t>& prf) {
+std::shared_ptr<Atomic<uint64_t>> XMSS_Index_Registry::get(const secure_vector<uint8_t>& private_seed,
+                                                           const secure_vector<uint8_t>& prf) {
    const size_t pos = get(make_key_id(private_seed, prf));
 
    if(pos < std::numeric_limits<size_t>::max()) {
@@ -53,18 +53,18 @@ size_t XMSS_Index_Registry::get(uint64_t id) const {
    return std::numeric_limits<size_t>::max();
 }
 
-size_t XMSS_Index_Registry::add(uint64_t id, size_t last_unused) {
+size_t XMSS_Index_Registry::add(uint64_t id, uint64_t last_unused) {
    const lock_guard_type<mutex_type> lock(m_mutex);
    const size_t pos = get(id);
    if(pos < m_key_ids.size()) {
       if(last_unused > *(m_leaf_indices[pos])) {
-         m_leaf_indices[pos] = std::make_shared<Atomic<size_t>>(last_unused);
+         m_leaf_indices[pos] = std::make_shared<Atomic<uint64_t>>(last_unused);
       }
       return pos;
    }
 
    m_key_ids.push_back(id);
-   m_leaf_indices.push_back(std::make_shared<Atomic<size_t>>(last_unused));
+   m_leaf_indices.push_back(std::make_shared<Atomic<uint64_t>>(last_unused));
    return m_key_ids.size() - 1;
 }
 

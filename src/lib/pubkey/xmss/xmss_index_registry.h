@@ -49,8 +49,8 @@ class XMSS_Index_Registry final {
        *
        * @return last unused leaf index for private_key.
        **/
-      std::shared_ptr<Atomic<size_t>> get(const secure_vector<uint8_t>& private_seed,
-                                          const secure_vector<uint8_t>& prf);
+      std::shared_ptr<Atomic<uint64_t>> get(const secure_vector<uint8_t>& private_seed,
+                                            const secure_vector<uint8_t>& prf);
 
    private:
       XMSS_Index_Registry() = default;
@@ -88,10 +88,10 @@ class XMSS_Index_Registry final {
        * @return position of leaf index registry entry for key identified
        *         by id.
        **/
-      size_t add(uint64_t id, size_t last_unused = 0);
+      size_t add(uint64_t id, uint64_t last_unused = 0);
 
       std::vector<uint64_t> m_key_ids;
-      std::vector<std::shared_ptr<Atomic<size_t>>> m_leaf_indices;
+      std::vector<std::shared_ptr<Atomic<uint64_t>>> m_leaf_indices;
       mutex_type m_mutex;
 };
 

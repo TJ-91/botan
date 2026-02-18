@@ -42,26 +42,48 @@ XMSSMT_Signature XMSSMT_Signature_Operation::sign(const secure_vector<uint8_t>& 
                                                   XMSSMT_PrivateKey& xmssmt_priv_key) {
    XMSS_Address adrs;
    const XMSSMT_Parameters params = xmssmt_priv_key.xmssmt_parameters();
-   std::vector<XMSS_TreeSignature> tree_sigs(params.tree_layers());
+   std::vector<XMSS_TreeSignature> tree_sigs;
 
    uint64_t idx_tree = m_leaf_idx;
 
    secure_vector<uint8_t> node = msg_hash;
    adrs.set_type(XMSS_Address::Type::OTS_Hash_Address);
    for(size_t i = 0; i < params.tree_layers(); i++) {
-      size_t idx_leaf = (idx_tree & ((1 << params.xmss_tree_height()) - 1));
+      uint32_t idx_leaf = (idx_tree & ((1 << params.xmss_tree_height()) - 1));
       idx_tree = idx_tree >> params.xmss_tree_height();
 
+      adrs.clear_lower();
       adrs.set_layer_addr(i);
       adrs.set_tree_addr(idx_tree);
       adrs.set_ots_address(idx_leaf);
-      adrs.set_hash_address(0);
       tree_sigs.push_back(generate_tree_signature(node, adrs, idx_leaf));
-      node = m_priv_key.tree_hash(
-         idx_leaf, params.xmss_tree_height(), adrs);  // TODO: extremely inefficient to recompute the tree again
+
+      // compute the root node of the current XMSS tree (not for the top level tree)
+      if(i < params.tree_layers() - 1) {
+         // use the auth path to compute the root node efficiently
+         node = root_from_signature(tree_sigs[i], node, adrs, idx_leaf);
+      }
    }
 
    return XMSSMT_Signature(params, m_leaf_idx, m_randomness, tree_sigs);
+}
+
+secure_vector<uint8_t> XMSSMT_Signature_Operation::root_from_signature(const XMSS_TreeSignature& tree_sig,
+                                                                       const secure_vector<uint8_t>& msg,
+                                                                       const XMSS_Address& adrs,
+                                                                       uint32_t leaf_idx) {
+   XMSSMT_Parameters params = m_priv_key.xmssmt_parameters();
+   XMSS_Address adrs_cpy(adrs);
+   return XMSS_Core_Ops::root_from_signature(leaf_idx,
+                                             tree_sig,
+                                             msg,
+                                             adrs_cpy,
+                                             m_priv_key.public_seed(),
+                                             m_hash,
+                                             params.element_size(),
+                                             params.xmss_tree_height(),
+                                             params.len(),
+                                             params.ots_oid());
 }
 
 size_t XMSSMT_Signature_Operation::signature_length() const {
@@ -75,7 +97,7 @@ wots_keysig_t XMSSMT_Signature_Operation::build_auth_path(size_t idx_leaf, const
    wots_keysig_t auth_path(params.xmss_tree_height());
 
    for(size_t j = 0; j < params.xmss_tree_height(); j++) {
-      const size_t k = (idx_leaf / (static_cast<size_t>(1) << j)) ^ 0x01;
+      const uint32_t k = (idx_leaf / (static_cast<size_t>(1) << j)) ^ 0x01;
       auth_path[j] = m_priv_key.tree_hash(k * (static_cast<size_t>(1) << j), j, adrs);
    }
 

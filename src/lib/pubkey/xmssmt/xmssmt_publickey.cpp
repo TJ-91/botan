@@ -37,7 +37,7 @@ XMSSMT_Parameters::xmssmt_algorithm_t deserialize_xmssmt_oid(std::span<const uin
 
 // fall back to raw decoding
 // TODO: in contrast to XMSS there are no old versions to support, however, the test vectors are decoded as raw keys (no octet string)
-// TODO: encode test vector public keys accordingly and remove the fallback here (?)
+//       encode test vector public keys accordingly and remove the fallback here (?)
 std::vector<uint8_t> extract_raw_public_key(std::span<const uint8_t> key_bits) {
    std::vector<uint8_t> raw_key;
    try {

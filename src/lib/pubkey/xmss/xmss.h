@@ -276,12 +276,6 @@ class BOTAN_PUBLIC_API(2, 0) XMSS_PrivateKey final : public virtual XMSS_PublicK
                                        XMSS_Address& adrs,
                                        XMSS_Hash& hash);
 
-      void tree_hash_subtree(secure_vector<uint8_t>& result,
-                             size_t start_idx,
-                             size_t target_node_height,
-                             XMSS_Address& adrs,
-                             XMSS_Hash& hash);
-
       std::shared_ptr<XMSS_PrivateKey_Internal> m_private;
 };
 

@@ -1,8 +1,10 @@
 /*
  * XMSS Core Operations
- * (C) 2016 Matthias Gierlings
+ * (C) 2016,2017 Matthias Gierlings
+ * (C) 2019 Jack Lloyd
+ * (C) 2023 René Meusel - Rohde & Schwarz Cybersecurity
  * (C) 2026 Johannes Roth
- * 
+ *
  * Botan is released under the Simplified BSD License (see license.txt)
  **/
 
@@ -12,6 +14,8 @@
 #include <botan/secmem.h>
 #include <botan/xmss_parameters.h>
 #include <botan/internal/xmss_address.h>
+#include <botan/internal/xmss_wots.h>
+#include <functional>
 #include <vector>
 
 namespace Botan {
@@ -86,7 +90,7 @@ class XMSS_Core_Ops {
       /**
        * Algorithm 13: "XMSS_rootFromSig"
        * Computes a root node using a (reduced) XMSS signature, a message and a seed.
-       * 
+       *
        * @param[in] tree_sig A reduced XMSS signature.
        * @param[in] msg A message (or intermediate root node for XMSS^MT).
        * @param[in] ards A XMSS tree address.
@@ -100,7 +104,7 @@ class XMSS_Core_Ops {
        * @return An n-byte string holding the value of the root of a tree
        *         defined by the input parameters.
        **/
-      static secure_vector<uint8_t> root_from_signature(uint64_t idx_leaf,
+      static secure_vector<uint8_t> root_from_signature(uint32_t idx_leaf,
                                                         const XMSS_TreeSignature& tree_sig,
                                                         const secure_vector<uint8_t>& msg,
                                                         XMSS_Address& adrs,
@@ -110,6 +114,46 @@ class XMSS_Core_Ops {
                                                         size_t xmss_tree_height,
                                                         size_t xmss_wots_len,
                                                         XMSS_WOTS_Parameters::ots_algorithm_t ots_oid);
+
+      static XMSS_WOTS_PublicKey wots_public_key_for(XMSS_Address& adrs,
+                                                     XMSS_Hash& hash,
+                                                     const XMSS_WOTS_Parameters& wots_params,
+                                                     std::span<const uint8_t> public_seed,
+                                                     const XMSS_WOTS_PrivateKey& private_key);
+
+      /**
+         * Algorithm 9: "treeHash"
+         * Computes the internal n-byte nodes of a Merkle tree.
+         *
+         * @param start_idx The start index.
+         * @param target_node_height Height of the target node.
+         * @param adrs Address of the tree containing the target node.
+         *
+         * @return The root node of a tree of height target_node height with the
+         *         leftmost leaf being the hash of the WOTS+ pk with index
+         *         start_idx.
+         **/
+      static secure_vector<uint8_t> tree_hash(
+         uint32_t start_idx,
+         size_t target_node_height,
+         const XMSS_Address& adrs,
+         XMSS_Hash& hash,
+         const XMSS_WOTS_Parameters& wots_params,
+         const secure_vector<uint8_t>& public_seed,
+         const std::function<XMSS_WOTS_PublicKey(XMSS_Address& adrs, XMSS_Hash& hash)>& wots_public_key_for);
+
+      /**
+         * Helper for multithreaded tree hashing.
+         */
+      static XMSS_Address tree_hash_subtree(
+         secure_vector<uint8_t>& result,
+         uint32_t start_idx,
+         size_t target_node_height,
+         const XMSS_Address& adrs,
+         XMSS_Hash& hash,
+         const XMSS_WOTS_Parameters& wots_params,
+         const secure_vector<uint8_t>& public_seed,
+         const std::function<XMSS_WOTS_PublicKey(XMSS_Address& adrs, XMSS_Hash& hash)>& wots_public_key_for);
 };
 
 }  // namespace Botan

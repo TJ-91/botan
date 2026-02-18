@@ -51,6 +51,11 @@ class XMSSMT_Signature_Operation final : public virtual PK_Ops::Signature {
                                                  XMSS_Address& adrs,
                                                  size_t idx_leaf);
 
+      secure_vector<uint8_t> root_from_signature(const XMSS_TreeSignature& tree_sig,
+                                                 const secure_vector<uint8_t>& msg,
+                                                 const XMSS_Address& adrs,
+                                                 uint32_t leaf_idx);
+
       /**
        * Algorithm 16: "XMSSMT_sign"
        * Generate an XMSS^MT signature and update the XMSS^MT secret key
