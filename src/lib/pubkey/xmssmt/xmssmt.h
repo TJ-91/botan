@@ -214,7 +214,10 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_PrivateKey final : public virtual XMSSMT_Pub
       XMSS_WOTS_PublicKey wots_public_key_for(XMSS_Address& adrs, XMSS_Hash& hash) const;
       XMSS_WOTS_PrivateKey wots_private_key_for(XMSS_Address& adrs, XMSS_Hash& hash) const;
 
-      secure_vector<uint8_t> tree_hash(uint32_t start_idx, size_t target_node_height, const XMSS_Address& adrs);
+      secure_vector<uint8_t> tree_hash(uint32_t start_idx,
+                                       size_t target_node_height,
+                                       const XMSS_Address& adrs,
+                                       XMSS_Hash& hash);
 
       std::shared_ptr<XMSSMT_PrivateKey_Internal> m_private;
 };

@@ -177,7 +177,8 @@ XMSSMT_PrivateKey::XMSSMT_PrivateKey(XMSSMT_Parameters::xmssmt_algorithm_t xmssm
       m_private(std::make_shared<XMSSMT_PrivateKey_Internal>(m_xmssmt_params, m_wots_params, rng)) {
    XMSS_Address adrs;
    adrs.set_layer_addr(static_cast<uint32_t>(m_xmssmt_params.tree_layers() - 1));
-   m_root = tree_hash(0, XMSSMT_PublicKey::m_xmssmt_params.xmss_tree_height(), adrs);
+   XMSS_Hash hash(m_xmssmt_params.hash_function_name(), m_xmssmt_params.hash_id_size());
+   m_root = tree_hash(0, XMSSMT_PublicKey::m_xmssmt_params.xmss_tree_height(), adrs, hash);
 }
 
 XMSSMT_PrivateKey::XMSSMT_PrivateKey(XMSSMT_Parameters::xmssmt_algorithm_t xmssmt_algo_id,
@@ -198,12 +199,13 @@ XMSSMT_PrivateKey::XMSSMT_PrivateKey(XMSSMT_Parameters::xmssmt_algorithm_t xmssm
 
 secure_vector<uint8_t> XMSSMT_PrivateKey::tree_hash(uint32_t start_idx,
                                                     size_t target_node_height,
-                                                    const XMSS_Address& adrs) {
+                                                    const XMSS_Address& adrs,
+                                                    XMSS_Hash& hash) {
    return XMSS_Core_Ops::tree_hash(
       start_idx,
       target_node_height,
       adrs,
-      m_private->hash(),
+      hash,
       m_private->wots_parameters(),
       this->public_seed(),
       [this](XMSS_Address& adrs_inner, XMSS_Hash& hash_inner) { return wots_public_key_for(adrs_inner, hash_inner); });

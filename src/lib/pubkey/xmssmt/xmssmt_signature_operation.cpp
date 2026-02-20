@@ -98,7 +98,7 @@ wots_keysig_t XMSSMT_Signature_Operation::build_auth_path(uint32_t idx_leaf, con
 
    for(size_t j = 0; j < params.xmss_tree_height(); j++) {
       const uint32_t k = (idx_leaf / (static_cast<uint32_t>(1) << j)) ^ 0x01;
-      auth_path[j] = m_priv_key.tree_hash(k * (static_cast<uint32_t>(1) << j), j, adrs);
+      auth_path[j] = m_priv_key.tree_hash(k * (static_cast<uint32_t>(1) << j), j, adrs, m_hash);
    }
 
    return auth_path;
