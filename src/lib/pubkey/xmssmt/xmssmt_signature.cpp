@@ -5,9 +5,10 @@
  * Botan is released under the Simplified BSD License (see license.txt)
  **/
 
+#include <botan/internal/xmssmt_signature.h>
+
 #include <botan/xmssmt_parameters.h>
 #include <botan/internal/loadstor.h>
-#include <botan/internal/xmssmt_signature.h>
 #include <iterator>
 
 namespace Botan {

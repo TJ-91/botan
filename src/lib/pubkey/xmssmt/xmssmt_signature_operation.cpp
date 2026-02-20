@@ -73,11 +73,11 @@ secure_vector<uint8_t> XMSSMT_Signature_Operation::root_from_signature(const XMS
                                                                        const XMSS_Address& adrs,
                                                                        uint32_t leaf_idx) {
    const XMSSMT_Parameters& params = m_priv_key.xmssmt_parameters();
-   XMSS_Address adrs_cpy(adrs);
+   XMSS_Address adrs_copy(adrs);
    return XMSS_Core_Ops::root_from_signature(leaf_idx,
                                              tree_sig,
                                              msg,
-                                             adrs_cpy,
+                                             adrs_copy,
                                              m_priv_key.public_seed(),
                                              m_hash,
                                              params.element_size(),

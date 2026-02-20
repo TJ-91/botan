@@ -8,13 +8,11 @@
 #ifndef BOTAN_XMSSMT_H_
 #define BOTAN_XMSSMT_H_
 
-#include <memory>
-#include <span>
-
 #include <botan/exceptn.h>
 #include <botan/pk_keys.h>
-
 #include <botan/xmssmt_parameters.h>
+#include <memory>
+#include <span>
 
 namespace Botan {
 

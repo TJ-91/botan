@@ -5,15 +5,13 @@
  * Botan is released under the Simplified BSD License (see license.txt)
  **/
 
-#ifndef BOTAN_XMSSMT_Parameters_H_
-#define BOTAN_XMSSMT_Parameters_H_
-
-#include <string>
+#ifndef BOTAN_XMSSMT_PARAMETERS_H_
+#define BOTAN_XMSSMT_PARAMETERS_H_
 
 #include <botan/secmem.h>
 #include <botan/types.h>
-
 #include <botan/xmss_wots_parameters.h>
+#include <string>
 
 namespace Botan {
 
@@ -152,7 +150,7 @@ class BOTAN_PUBLIC_API(2, 0) XMSSMT_Parameters {
       /**
        * @returns total number of signatures allowed for this XMSS^MT instance
        */
-      size_t total_number_of_signatures() const { return size_t(1) << tree_height(); }
+      uint64_t total_number_of_signatures() const { return uint64_t(1) << tree_height(); }
 
       /**
        * The Winternitz parameter.

@@ -46,7 +46,7 @@ class XMSS_Address final {
        *
        * @return Layer address.
        **/
-      uint8_t get_layer_addr() const { return get_hi32(0); }
+      uint32_t get_layer_addr() const { return get_hi32(0); }
 
       /**
        * sets the Layer Address. A call to this method is only required by XMSS_MT.

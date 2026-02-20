@@ -6,11 +6,11 @@
  **/
 
 #include <botan/xmssmt.h>
-#include <botan/xmssmt_parameters.h>
 
 #include <botan/ber_dec.h>
 #include <botan/der_enc.h>
 #include <botan/rng.h>
+#include <botan/xmssmt_parameters.h>
 #include <botan/internal/buffer_slicer.h>
 #include <botan/internal/concat_util.h>
 #include <botan/internal/loadstor.h>
@@ -38,7 +38,7 @@ XMSSMT_Parameters::xmssmt_algorithm_t deserialize_xmssmt_oid(std::span<const uin
 // fall back to raw decoding
 // TODO: in contrast to XMSS there are no old versions to support, however, the test vectors are decoded as raw keys (no octet string)
 //       encode test vector public keys accordingly and remove the fallback here (?)
-std::vector<uint8_t> extract_raw_public_key(std::span<const uint8_t> key_bits) {
+std::vector<uint8_t> extract_raw_xmssmt_public_key(std::span<const uint8_t> key_bits) {
    std::vector<uint8_t> raw_key;
    try {
       BER_Decoder(key_bits).decode(raw_key, ASN1_Type::OctetString).verify_end();
@@ -67,7 +67,7 @@ XMSSMT_PublicKey::XMSSMT_PublicKey(XMSSMT_Parameters::xmssmt_algorithm_t xmssmt_
       m_public_seed(rng.random_vec(m_xmssmt_params.element_size())) {}
 
 XMSSMT_PublicKey::XMSSMT_PublicKey(std::span<const uint8_t> key_bits) :
-      m_raw_key(extract_raw_public_key(key_bits)),
+      m_raw_key(extract_raw_xmssmt_public_key(key_bits)),
       m_xmssmt_params(deserialize_xmssmt_oid(m_raw_key)),
       m_wots_params(m_xmssmt_params.ots_oid()) {
    if(m_raw_key.size() < m_xmssmt_params.raw_public_key_size()) {

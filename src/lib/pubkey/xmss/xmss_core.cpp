@@ -13,12 +13,11 @@
 
 #include <botan/internal/xmss_hash.h>
 #include <botan/internal/xmss_wots.h>
-
-#include <future>
-
 #if defined(BOTAN_HAS_THREAD_UTILS)
    #include <botan/internal/thread_pool.h>
 #endif
+#include <array>
+#include <future>
 
 namespace Botan {
 
@@ -148,7 +147,7 @@ secure_vector<uint8_t> XMSS_Core_Ops::tree_hash(
 
    const size_t subtrees = static_cast<size_t>(1) << split_level;
    const uint32_t last_idx = (static_cast<uint32_t>(1) << (target_node_height)) + start_idx;
-   const uint32_t offs = (last_idx - start_idx) / subtrees;
+   const uint32_t offs = (last_idx - start_idx) / static_cast<uint32_t>(subtrees);
    // this cast cannot overflow because target_node_height is limited
    uint8_t level = static_cast<uint8_t>(split_level);  // current level in the tree
 
@@ -180,7 +179,7 @@ secure_vector<uint8_t> XMSS_Core_Ops::tree_hash(
 
       work_treehash.push_back(thread_pool.run(work_fn,
                                               std::ref(nodes[i]),
-                                              start_idx + i * offs,
+                                              start_idx + static_cast<uint32_t>(i) * offs,
                                               target_node_height - split_level,
                                               std::cref(node_addresses[i]),
                                               std::ref(xmss_hash[i]),

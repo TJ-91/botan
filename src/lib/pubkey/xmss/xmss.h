@@ -271,9 +271,9 @@ class BOTAN_PUBLIC_API(2, 0) XMSS_PrivateKey final : public virtual XMSS_PublicK
        *         leftmost leaf being the hash of the WOTS+ pk with index
        *         start_idx.
        **/
-      secure_vector<uint8_t> tree_hash(size_t start_idx,
+      secure_vector<uint8_t> tree_hash(uint32_t start_idx,
                                        size_t target_node_height,
-                                       XMSS_Address& adrs,
+                                       const XMSS_Address& adrs,
                                        XMSS_Hash& hash);
 
       std::shared_ptr<XMSS_PrivateKey_Internal> m_private;
