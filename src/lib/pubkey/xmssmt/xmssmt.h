@@ -27,17 +27,6 @@ class XMSS_WOTS_PrivateKey;
 class BOTAN_PUBLIC_API(3, 12) XMSSMT_PublicKey : public virtual Public_Key {
    public:
       /**
-       * Creates a new XMSS^MT public key for the chosen XMSS^MT signature method.
-       * New public and prf seeds are generated using rng. The appropriate WOTS
-       * signature method will be automatically set based on the chosen XMSS
-       * signature method.
-       *
-       * @param xmssmt_oid Identifier for the selected XMSS^MT signature method.
-       * @param rng A random number generator to use for key generation.
-       **/
-      XMSSMT_PublicKey(XMSSMT_Parameters::xmssmt_algorithm_t xmssmt_oid, RandomNumberGenerator& rng);
-
-      /**
        * Loads a public key.
        *
        * Public key must be encoded as in RFC
@@ -106,6 +95,23 @@ class BOTAN_PUBLIC_API(3, 12) XMSSMT_PublicKey : public virtual Public_Key {
       const secure_vector<uint8_t>& root() const { return m_root; }
 
       const XMSSMT_Parameters& xmssmt_parameters() const { return m_xmssmt_params; }
+
+   protected:
+      /**
+       * Creates a new XMSS^MT public key for the chosen XMSS^MT signature method.
+       * New public and prf seeds are generated using rng. The appropriate WOTS
+       * signature method will be automatically set based on the chosen XMSS
+       * signature method.
+       *
+       * This is the matching PublicKey constructor for
+       * `XMSSMT_PrivateKey(XMSSMT_Parameters::xmssmt_algorithm_t, RandomNumberGenerator&)`
+       * and is be called to generate the public seed.
+       * It should not be called in other contexts.
+       *
+       * @param xmssmt_oid Identifier for the selected XMSS^MT signature method.
+       * @param rng A random number generator to use for key generation.
+       **/
+      XMSSMT_PublicKey(XMSSMT_Parameters::xmssmt_algorithm_t xmssmt_oid, RandomNumberGenerator& rng);
 
    protected:
       std::vector<uint8_t> m_raw_key;        // NOLINT(*non-private-member-variable*)
