@@ -23,6 +23,7 @@
 #include <botan/rng.h>
 #include <botan/internal/buffer_slicer.h>
 #include <botan/internal/concat_util.h>
+#include <botan/internal/ct_utils.h>
 #include <botan/internal/int_utils.h>
 #include <botan/internal/loadstor.h>
 #include <botan/internal/stateful_key_index_registry.h>
@@ -67,7 +68,10 @@ class XMSS_PrivateKey_Internal {
             m_wots_derivation_method(wots_derivation_method),
             m_prf(rng.random_vec(xmss_params.element_size())),
             m_private_seed(rng.random_vec(xmss_params.element_size())),
-            m_keyid(Stateful_Key_Index_Registry::KeyId("XMSS", m_xmss_params.oid(), m_private_seed, m_prf)) {}
+            m_keyid(Stateful_Key_Index_Registry::KeyId("XMSS", m_xmss_params.oid(), m_private_seed, m_prf)) {
+         CT::poison(m_prf);
+         CT::poison(m_private_seed);
+      }
 
       XMSS_PrivateKey_Internal(const XMSS_Parameters& xmss_params,
                                const XMSS_WOTS_Parameters& wots_params,
@@ -79,7 +83,10 @@ class XMSS_PrivateKey_Internal {
             m_wots_derivation_method(wots_derivation_method),
             m_prf(std::move(prf)),
             m_private_seed(std::move(private_seed)),
-            m_keyid(Stateful_Key_Index_Registry::KeyId("XMSS", m_xmss_params.oid(), m_private_seed, m_prf)) {}
+            m_keyid(Stateful_Key_Index_Registry::KeyId("XMSS", m_xmss_params.oid(), m_private_seed, m_prf)) {
+         CT::poison(m_prf);
+         CT::poison(m_private_seed);
+      }
 
       XMSS_PrivateKey_Internal(const XMSS_Parameters& xmss_params,
                                const XMSS_WOTS_Parameters& wots_params,
@@ -126,6 +133,8 @@ class XMSS_PrivateKey_Internal {
          m_wots_derivation_method =
             (s.empty()) ? WOTS_Derivation_Method::Botan2x : static_cast<WOTS_Derivation_Method>(s.take(1).front());
 
+         CT::poison(m_prf);
+         CT::poison(m_private_seed);
          BOTAN_ASSERT_NOMSG(s.empty());
       }
 
