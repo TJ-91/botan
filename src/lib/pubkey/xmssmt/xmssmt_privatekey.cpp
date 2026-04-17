@@ -12,6 +12,7 @@
 #include <botan/rng.h>
 #include <botan/internal/buffer_slicer.h>
 #include <botan/internal/concat_util.h>
+#include <botan/internal/ct_utils.h>
 #include <botan/internal/int_utils.h>
 #include <botan/internal/loadstor.h>
 #include <botan/internal/stateful_key_index_registry.h>
@@ -43,7 +44,10 @@ class XMSSMT_PrivateKey_Internal {
             m_hash(m_xmssmt_params.hash_function_name(), m_xmssmt_params.hash_id_size()),
             m_prf(rng.random_vec(xmssmt_params.element_size())),
             m_private_seed(rng.random_vec(xmssmt_params.element_size())),
-            m_keyid(Stateful_Key_Index_Registry::KeyId("XMSSMT", m_xmssmt_params.oid(), m_private_seed, m_prf)) {}
+            m_keyid(Stateful_Key_Index_Registry::KeyId("XMSSMT", m_xmssmt_params.oid(), m_private_seed, m_prf)) {
+         CT::poison(m_prf);
+         CT::poison(m_private_seed);
+      }
 
       XMSSMT_PrivateKey_Internal(const XMSSMT_Parameters& xmssmt_params,
                                  const XMSS_WOTS_Parameters& wots_params,
@@ -54,7 +58,10 @@ class XMSSMT_PrivateKey_Internal {
             m_hash(m_xmssmt_params.hash_function_name(), m_xmssmt_params.hash_id_size()),
             m_prf(std::move(prf)),
             m_private_seed(std::move(private_seed)),
-            m_keyid(Stateful_Key_Index_Registry::KeyId("XMSSMT", m_xmssmt_params.oid(), m_private_seed, m_prf)) {}
+            m_keyid(Stateful_Key_Index_Registry::KeyId("XMSSMT", m_xmssmt_params.oid(), m_private_seed, m_prf)) {
+         CT::poison(m_prf);
+         CT::poison(m_private_seed);
+      }
 
       XMSSMT_PrivateKey_Internal(const XMSSMT_Parameters& xmssmt_params,
                                  const XMSS_WOTS_Parameters& wots_params,
@@ -90,6 +97,8 @@ class XMSSMT_PrivateKey_Internal {
          // Note m_keyid must be initialized before set_unused_leaf_index is called!
          set_unused_leaf_index(unused_leaf);
 
+         CT::poison(m_prf);
+         CT::poison(m_private_seed);
          BOTAN_ASSERT_NOMSG(s.empty());
       }
 

@@ -16,6 +16,7 @@
 
 #include <botan/internal/xmss_signature_operation.h>
 
+#include <botan/internal/ct_utils.h>
 #include <botan/internal/xmss_core_ops.h>
 #include <botan/internal/xmss_tools.h>
 
@@ -82,6 +83,7 @@ void XMSS_Signature_Operation::initialize() {
    // write prefix for message hashing into buffer.
    xmss_concat(index_bytes, m_leaf_idx, 32);
    m_hash.prf(m_randomness, m_priv_key.prf_value(), index_bytes);
+   CT::unpoison(m_randomness);  // unpoison: randomness is public; correlation with secret value destroyed with PRF
    index_bytes.clear();
    xmss_concat(index_bytes, m_leaf_idx, m_priv_key.xmss_parameters().element_size());
    m_hash.h_msg_init(m_randomness, m_priv_key.root(), index_bytes);
