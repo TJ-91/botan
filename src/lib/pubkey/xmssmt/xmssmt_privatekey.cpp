@@ -190,6 +190,14 @@ XMSSMT_PrivateKey::XMSSMT_PrivateKey(XMSSMT_Parameters::xmssmt_algorithm_t xmssm
    adrs.set_layer_addr(static_cast<uint32_t>(m_xmssmt_params.tree_layers() - 1));
    XMSS_Hash hash(m_xmssmt_params.hash_function_name(), m_xmssmt_params.hash_id_size());
    m_root = tree_hash(0, XMSSMT_PublicKey::m_xmssmt_params.xmss_tree_height(), adrs, hash);
+
+   // sanity check: will trigger Conditional jump or move depends on uninitialised value(s)
+   // if built with "--with-valgrind" and run under valgrind.
+   if(m_private->private_seed()[0] == 0) {
+      printf("a\n");
+   } else {
+      printf("b\n");
+   }
 }
 
 XMSSMT_PrivateKey::XMSSMT_PrivateKey(XMSSMT_Parameters::xmssmt_algorithm_t xmssmt_algo_id,
